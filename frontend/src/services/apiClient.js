@@ -1,10 +1,14 @@
 const getToken = () => {
-  return localStorage.getItem('biteflow_token');
+  return (
+    sessionStorage.getItem('biteflow_token') ||
+    localStorage.getItem('biteflow_token') ||
+    null
+  );
 };
 
 export const clearSessionAndRedirect = () => {
-  localStorage.removeItem('biteflow_token');
-  localStorage.removeItem('biteflow_user');
+  sessionStorage.removeItem('biteflow_token');
+  sessionStorage.removeItem('biteflow_user');
   if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
     window.location.href = '/login?expired=true';
   }

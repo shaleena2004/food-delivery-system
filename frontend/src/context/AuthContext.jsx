@@ -8,32 +8,39 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session from localStorage on mount and sync across tabs
+  // Restore session: strictly isolated in sessionStorage per browser tab/window
   useEffect(() => {
-    const syncSession = () => {
-      const savedToken = localStorage.getItem('biteflow_token');
-      const savedUser = localStorage.getItem('biteflow_user');
+    let savedToken = sessionStorage.getItem('biteflow_token');
+    let savedUser = sessionStorage.getItem('biteflow_user');
 
+    // One-time smooth migration if legacy token was in localStorage
+    if (!savedToken && localStorage.getItem('biteflow_token')) {
+      savedToken = localStorage.getItem('biteflow_token');
+      savedUser = localStorage.getItem('biteflow_user');
       if (savedToken && savedUser) {
-        try {
-          setToken(savedToken);
-          setUser(JSON.parse(savedUser));
-        } catch {
-          localStorage.removeItem('biteflow_token');
-          localStorage.removeItem('biteflow_user');
-          setUser(null);
-          setToken(null);
-        }
-      } else {
+        sessionStorage.setItem('biteflow_token', savedToken);
+        sessionStorage.setItem('biteflow_user', savedUser);
+      }
+      localStorage.removeItem('biteflow_token');
+      localStorage.removeItem('biteflow_user');
+    }
+
+    if (savedToken && savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        setToken(savedToken);
+        setUser(parsed);
+      } catch {
+        sessionStorage.removeItem('biteflow_token');
+        sessionStorage.removeItem('biteflow_user');
         setUser(null);
         setToken(null);
       }
-      setLoading(false);
-    };
-
-    syncSession();
-    window.addEventListener('storage', syncSession);
-    return () => window.removeEventListener('storage', syncSession);
+    } else {
+      setUser(null);
+      setToken(null);
+    }
+    setLoading(false);
   }, []);
 
   const login = useCallback(async (credentials) => {
@@ -43,8 +50,9 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     setToken(userToken);
 
-    localStorage.setItem('biteflow_token', userToken);
-    localStorage.setItem('biteflow_user', JSON.stringify(userData));
+    // Save strictly to this tab's sessionStorage (100% window/tab isolated)
+    sessionStorage.setItem('biteflow_token', userToken);
+    sessionStorage.setItem('biteflow_user', JSON.stringify(userData));
 
     return userData;
   }, []);
@@ -56,17 +64,18 @@ export const AuthProvider = ({ children }) => {
     setUser(registeredUser);
     setToken(userToken);
 
-    localStorage.setItem('biteflow_token', userToken);
-    localStorage.setItem('biteflow_user', JSON.stringify(registeredUser));
+    sessionStorage.setItem('biteflow_token', userToken);
+    sessionStorage.setItem('biteflow_user', JSON.stringify(registeredUser));
 
     return registeredUser;
   }, []);
 
+  // Explicit logout only: logs out ONLY this window when user clicks the logout button
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('biteflow_token');
-    localStorage.removeItem('biteflow_user');
+    sessionStorage.removeItem('biteflow_token');
+    sessionStorage.removeItem('biteflow_user');
     window.location.href = '/login';
   }, []);
 
