@@ -67,7 +67,7 @@ class RestaurantService {
 
     const restaurantData = {
       ...data,
-      ownerId: user.userId,
+      ownerId: data.ownerId || user.userId,
       email: data.email || user.email,
     };
 

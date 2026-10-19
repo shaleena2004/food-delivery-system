@@ -8,21 +8,32 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session from localStorage on mount
+  // Restore session from localStorage on mount and sync across tabs
   useEffect(() => {
-    const savedToken = localStorage.getItem('biteflow_token');
-    const savedUser = localStorage.getItem('biteflow_user');
+    const syncSession = () => {
+      const savedToken = localStorage.getItem('biteflow_token');
+      const savedUser = localStorage.getItem('biteflow_user');
 
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem('biteflow_token');
-        localStorage.removeItem('biteflow_user');
+      if (savedToken && savedUser) {
+        try {
+          setToken(savedToken);
+          setUser(JSON.parse(savedUser));
+        } catch {
+          localStorage.removeItem('biteflow_token');
+          localStorage.removeItem('biteflow_user');
+          setUser(null);
+          setToken(null);
+        }
+      } else {
+        setUser(null);
+        setToken(null);
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    syncSession();
+    window.addEventListener('storage', syncSession);
+    return () => window.removeEventListener('storage', syncSession);
   }, []);
 
   const login = useCallback(async (credentials) => {

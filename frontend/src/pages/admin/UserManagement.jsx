@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/auth.service';
 import { useFetch } from '../../hooks/useFetch';
 import { Panel } from '../../components/common/Panel';
@@ -30,6 +31,7 @@ const ROLE_OPTIONS = [
 ];
 
 export const UserManagement = () => {
+  const { user } = useAuth();
   const [updatingId, setUpdatingId] = useState(null);
   const [msg, setMsg] = useState('');
 
@@ -96,7 +98,13 @@ export const UserManagement = () => {
       refetch();
       setTimeout(() => setMsg(''), 4000);
     } catch (err) {
-      setCreateError(err.message || 'Failed to create user account');
+      if (err.message && (err.message.includes('CUSTOMER') || err.message.includes('Access denied') || err.message.includes('403'))) {
+        setCreateError(
+          'Access Denied: The active session in this browser is a Customer account. Please log out and sign in with admin@biteflow.com (Password: Admin123!) to create staff accounts.'
+        );
+      } else {
+        setCreateError(err.message || 'Failed to create user account');
+      }
     } finally {
       setCreating(false);
     }
@@ -245,9 +253,19 @@ export const UserManagement = () => {
         }
       >
         <form onSubmit={handleCreateUser} className="space-y-4 text-xs">
+          {user && user.role !== 'ADMIN' && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <strong className="block font-bold">Session Warning</strong>
+                <span>You are currently active as a Customer. Please re-login as System Administrator (admin@biteflow.com) to create accounts.</span>
+              </div>
+            </div>
+          )}
+
           {createError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-start gap-2 leading-relaxed">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
               <span>{createError}</span>
             </div>
           )}
