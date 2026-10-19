@@ -177,9 +177,10 @@ export const MyRestaurant = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/90 text-white backdrop-blur-md shadow-xs flex items-center gap-1">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/90 text-white backdrop-blur-md shadow-xs flex items-center gap-1.5">
                         <Star className="w-3.5 h-3.5 fill-current" />
-                        {restaurant.rating || 4.8}
+                        <span>{restaurant.rating !== undefined && restaurant.rating !== null ? Number(restaurant.rating).toFixed(1) : '5.0'}</span>
+                        <span className="text-[11px] opacity-80 font-medium">({restaurant.totalRatings || 0} reviews)</span>
                       </span>
                       <span className="px-3 py-1 rounded-full text-xs font-bold bg-black/50 text-white backdrop-blur-md shadow-xs flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-orange-400" />
@@ -317,6 +318,58 @@ export const MyRestaurant = () => {
                   </p>
                 </div>
               )}
+
+              {/* Customer Reviews & Live Ratings Section for Restaurant Owner */}
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                      <Star className="w-4 h-4 fill-amber-500" />
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                        Customer Reviews & Real-Time Ratings
+                      </h3>
+                      <p className="text-[11px] text-slate-400">
+                        Live Score: <strong className="text-amber-600">{restaurant.rating !== undefined && restaurant.rating !== null ? Number(restaurant.rating).toFixed(1) : '5.0'}★</strong> ({restaurant.totalRatings || 0} verified customer reviews)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {!restaurant.ratingsList || restaurant.ratingsList.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic py-2">
+                    No customer reviews recorded yet. Real reviews submitted by customers upon delivery will automatically appear here.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                    {restaurant.ratingsList.map((rev, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-800 dark:text-slate-100">
+                            {rev.userName || 'Verified Customer'}
+                          </span>
+                          <span className="inline-flex items-center gap-1 font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md text-[11px]">
+                            <Star className="w-3 h-3 fill-amber-500" />
+                            {rev.rating || 5}★
+                          </span>
+                        </div>
+                        {rev.comment && (
+                          <p className="text-slate-600 dark:text-slate-300 italic">
+                            "{rev.comment}"
+                          </p>
+                        )}
+                        <span className="text-[10px] text-slate-400 block">
+                          {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : 'Recent'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Management Shortcuts Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">

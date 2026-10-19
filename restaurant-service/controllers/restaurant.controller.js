@@ -89,6 +89,38 @@ class RestaurantController {
     }
   }
 
+  async addRating(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { rating, comment } = req.body;
+      const result = await restaurantService.addRating(id, {
+        rating,
+        comment,
+        userId: req.user ? req.user.userId : 'anonymous',
+        userName: req.user ? (req.user.name || req.user.email) : 'Verified Customer',
+      });
+      return res.status(200).json({
+        message: 'Rating and review submitted successfully',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getRestaurantReviews(req, res, next) {
+    try {
+      const { id } = req.params;
+      const reviews = await restaurantService.getRestaurantReviews(id);
+      return res.status(200).json({
+        message: 'Reviews retrieved successfully',
+        data: reviews,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async health(req, res) {
     return res.status(200).json({
       service: 'restaurant-service',

@@ -15,8 +15,12 @@ router.get(
   restaurantController.getMyRestaurant
 );
 
-// Public single restaurant view
+// Public single restaurant view & reviews
 router.get('/:id', restaurantController.getRestaurantById);
+router.get('/:id/reviews', restaurantController.getRestaurantReviews);
+
+// Customer rating & review submission
+router.post('/:id/rate', authenticate, restaurantController.addRating);
 
 // Protected endpoints for creating/managing restaurants
 router.post(

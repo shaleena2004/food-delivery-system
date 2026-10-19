@@ -279,9 +279,10 @@ export const Restaurants = () => {
                         <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-md">
                           {restaurant.cuisineType}
                         </span>
-                        <div className="flex items-center gap-1 text-xs font-bold bg-amber-500/90 backdrop-blur-md px-2 py-0.5 rounded-md">
+                        <div className="flex items-center gap-1.5 text-xs font-bold bg-amber-500/95 backdrop-blur-md px-2.5 py-1 rounded-md text-white shadow-xs">
                           <Star className="w-3.5 h-3.5 fill-white" />
-                          <span>{restaurant.rating || '4.8'}</span>
+                          <span>{restaurant.rating !== undefined && restaurant.rating !== null ? Number(restaurant.rating).toFixed(1) : '5.0'}</span>
+                          <span className="text-[10px] opacity-90 font-medium">({restaurant.totalRatings || 0})</span>
                         </div>
                       </div>
                     </div>

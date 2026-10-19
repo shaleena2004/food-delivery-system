@@ -9,7 +9,8 @@ import { Button } from '../../components/common/Button';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { RestaurantEditModal } from '../../components/restaurant/RestaurantEditModal';
 import { RestaurantDeleteModal } from '../../components/restaurant/RestaurantDeleteModal';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { Modal } from '../../components/common/Modal';
 import {
   Star,
   Clock,
@@ -23,18 +24,31 @@ import {
   Edit,
   Trash2,
   ShieldCheck,
+  MessageSquare,
+  Sparkles,
+  CheckCircle,
+  AlertCircle,
+  User,
 } from 'lucide-react';
 
 export const RestaurantDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const isAdmin = user && user.role === 'ADMIN';
 
   const { addItem, cart, totalItemCount, total } = useCart();
   const [addedItemIds, setAddedItemIds] = useState({});
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  // Review & Rating Modal State
+  const [rateModalOpen, setRateModalOpen] = useState(false);
+  const [userRating, setUserRating] = useState(5);
+  const [userComment, setUserComment] = useState('');
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [ratingError, setRatingError] = useState('');
+  const [rateToast, setRateToast] = useState('');
 
   // 1. Fetch Restaurant Details
   const {
@@ -51,6 +65,38 @@ export const RestaurantDetail = () => {
     error: errorMenu,
     refetch: refetchMenu,
   } = useFetch((signal) => restaurantService.getMenu(id, signal), [id]);
+
+  // 3. Fetch Real-time Customer Reviews
+  const {
+    data: reviewsData,
+    refetch: refetchReviews,
+  } = useFetch((signal) => restaurantService.getReviews(id, signal), [id]);
+
+  const handleRateSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    setRatingError('');
+    setRatingSubmitting(true);
+    try {
+      await restaurantService.rateRestaurant(id, {
+        rating: userRating,
+        comment: userComment,
+      });
+      setRateToast('Thank you! Your rating and review were recorded in real-time!');
+      setTimeout(() => setRateToast(''), 4500);
+      setRateModalOpen(false);
+      setUserComment('');
+      refetchRest();
+      refetchReviews();
+    } catch (err) {
+      setRatingError(err.message || 'Failed to submit rating. Please try again.');
+    } finally {
+      setRatingSubmitting(false);
+    }
+  };
 
   const handleAddToCart = (item) => {
     if (!restaurant) return;
@@ -90,6 +136,14 @@ export const RestaurantDetail = () => {
 
   return (
     <div className="space-y-8 pb-16">
+      {/* Rate Toast Notification */}
+      {rateToast && (
+        <div className="fixed top-20 right-6 z-50 p-4 bg-emerald-600 text-white rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold animate-bounce">
+          <CheckCircle className="w-4 h-4 shrink-0" />
+          <span>{rateToast}</span>
+        </div>
+      )}
+
       {/* Top Bar & Back */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
@@ -134,6 +188,7 @@ export const RestaurantDetail = () => {
         onRetry={() => {
           refetchRest();
           refetchMenu();
+          refetchReviews();
         }}
       >
         {() => (
@@ -168,7 +223,12 @@ export const RestaurantDetail = () => {
                 <div className="flex flex-wrap items-center gap-6">
                   <div className="flex items-center gap-1.5 text-amber-600 font-bold">
                     <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                    <span>{restaurant.rating || '4.8'} (500+ reviews)</span>
+                    <span>
+                      {restaurant.rating !== undefined && restaurant.rating !== null ? Number(restaurant.rating).toFixed(1) : '5.0'}
+                    </span>
+                    <span className="text-slate-400 font-medium">
+                      ({restaurant.totalRatings || 0} {restaurant.totalRatings === 1 ? 'review' : 'reviews'})
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-slate-400" />
@@ -268,6 +328,103 @@ export const RestaurantDetail = () => {
               </div>
             )}
 
+            {/* Customer Reviews & Live Ratings Section */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-8 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 rounded-md bg-amber-100 text-amber-600">
+                      <Star className="w-4 h-4 fill-amber-500" />
+                    </span>
+                    <span className="text-xs font-black uppercase tracking-wider text-amber-700">
+                      Customer Ratings & Feedback
+                    </span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight mt-1">
+                    Live Verified Reviews
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Real-time customer feedback updated dynamically with every rating & order
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div className="text-2xl font-black text-slate-900 leading-none">
+                      {restaurant.rating !== undefined && restaurant.rating !== null ? Number(restaurant.rating).toFixed(1) : '5.0'}
+                      <span className="text-xs text-slate-400 font-normal"> / 5.0</span>
+                    </div>
+                    <span className="text-[11px] text-slate-400 font-medium">
+                      {restaurant.totalRatings || 0} verified ratings
+                    </span>
+                  </div>
+
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={Sparkles}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        navigate('/login');
+                      } else {
+                        setRateModalOpen(true);
+                      }
+                    }}
+                  >
+                    Rate Restaurant
+                  </Button>
+                </div>
+              </div>
+
+              {/* Reviews List */}
+              {(!restaurant.ratingsList || restaurant.ratingsList.length === 0) &&
+              (!reviewsData?.reviews || reviewsData.reviews.length === 0) ? (
+                <div className="text-center py-10 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200 p-6">
+                  <MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <h4 className="text-sm font-bold text-slate-700">No reviews yet</h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Be the first verified customer to rate and review {restaurant.name}!
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(reviewsData?.reviews || restaurant.ratingsList || []).map((rev, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl bg-slate-50/70 border border-slate-100 space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 font-bold flex items-center justify-center text-xs">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-slate-800 block">
+                              {rev.userName || 'Verified Customer'}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {rev.createdAt ? formatDate(rev.createdAt) : 'Recently'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
+                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                          <span>{rev.rating || 5}★</span>
+                        </div>
+                      </div>
+
+                      {rev.comment && (
+                        <p className="text-xs text-slate-600 leading-relaxed italic bg-white p-2.5 rounded-xl border border-slate-100">
+                          "{rev.comment}"
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Floating Cart Pill at Bottom */}
             {totalItemCount > 0 && (
               <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-full max-w-md px-4 animate-slideUp">
@@ -298,6 +455,91 @@ export const RestaurantDetail = () => {
           </>
         )}
       </DataState>
+
+      {/* Rate Restaurant Modal */}
+      <Modal
+        isOpen={rateModalOpen}
+        onClose={() => setRateModalOpen(false)}
+        title={`Rate & Review: ${restaurant?.name}`}
+        subtitle="Your real-time review directly updates the restaurant's live score"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRateModalOpen(false)}
+              disabled={ratingSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={ratingSubmitting}
+              onClick={handleRateSubmit}
+              icon={Sparkles}
+            >
+              Submit Rating
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleRateSubmit} className="space-y-4">
+          {ratingError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>{ratingError}</span>
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-2">
+              Select Your Rating:
+            </label>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setUserRating(star)}
+                  className="p-2 rounded-xl transition-all hover:scale-125 focus:outline-none cursor-pointer"
+                >
+                  <Star
+                    className={`w-7 h-7 ${
+                      star <= userRating
+                        ? 'fill-amber-400 text-amber-400 drop-shadow-sm'
+                        : 'text-slate-300 hover:text-amber-300'
+                    }`}
+                  />
+                </button>
+              ))}
+              <span className="text-xs font-black text-amber-600 ml-2">
+                {userRating} / 5 Stars
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1 italic">
+              {userRating === 5 && 'Outstanding — Absolutely loved it! ⭐'}
+              {userRating === 4 && 'Very Good — Fresh and delicious!'}
+              {userRating === 3 && 'Good — Met expectations.'}
+              {userRating === 2 && 'Fair — Could be better.'}
+              {userRating === 1 && 'Poor — Disappointing.'}
+            </p>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-1">
+              Your Review / Comments (Optional):
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Tell others about the food quality, flavors, and packaging..."
+              value={userComment}
+              onChange={(e) => setUserComment(e.target.value)}
+              className="w-full text-xs rounded-xl border border-slate-200 p-3 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+        </form>
+      </Modal>
 
       {/* Admin Modals */}
       <RestaurantEditModal

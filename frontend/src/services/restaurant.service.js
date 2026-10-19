@@ -70,4 +70,15 @@ export const restaurantService = {
       method: 'DELETE',
     });
   },
+
+  async rateRestaurant(id, { rating, comment }) {
+    return await apiClient(`${BASE_URL}/restaurants/${id}/rate`, {
+      method: 'POST',
+      body: JSON.stringify({ rating, comment }),
+    });
+  },
+
+  async getReviews(id, signal) {
+    return await apiClient(`${BASE_URL}/restaurants/${id}/reviews`, { signal });
+  },
 };

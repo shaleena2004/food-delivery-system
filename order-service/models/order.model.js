@@ -86,6 +86,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    orderNotes: {
+      type: String,
+      default: '',
+    },
     statusHistory: [
       {
         status: String,

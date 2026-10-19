@@ -128,6 +128,55 @@ class RestaurantService {
 
     return await restaurantRepository.deleteById(id);
   }
+
+  async addRating(id, { rating, comment, userId, userName }) {
+    const numRating = Number(rating);
+    if (!numRating || numRating < 1 || numRating > 5) {
+      const error = new Error('Rating must be between 1 and 5 stars');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const restaurant = await this.getRestaurantById(id);
+    const currentTotal = restaurant.totalRatings || 0;
+    const currentRating = restaurant.rating || 5.0;
+
+    const newTotal = currentTotal + 1;
+    const newAverage = currentTotal === 0
+      ? numRating
+      : Number((((currentRating * currentTotal) + numRating) / newTotal).toFixed(1));
+
+    const reviewEntry = {
+      userId: userId || 'anonymous',
+      userName: userName || 'Customer',
+      rating: numRating,
+      comment: (comment || '').trim(),
+      createdAt: new Date(),
+    };
+
+    const updated = await restaurantRepository.updateById(id, {
+      rating: newAverage,
+      totalRatings: newTotal,
+      $push: { ratingsList: reviewEntry },
+    });
+
+    return {
+      restaurantId: id,
+      rating: newAverage,
+      totalRatings: newTotal,
+      review: reviewEntry,
+      restaurant: updated,
+    };
+  }
+
+  async getRestaurantReviews(id) {
+    const restaurant = await this.getRestaurantById(id);
+    return {
+      rating: restaurant.rating || 5.0,
+      totalRatings: restaurant.totalRatings || 0,
+      reviews: restaurant.ratingsList || [],
+    };
+  }
 }
 
 module.exports = new RestaurantService();

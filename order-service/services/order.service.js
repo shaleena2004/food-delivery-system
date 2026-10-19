@@ -291,6 +291,48 @@ class OrderService {
       },
     });
 
+    // Real-time restaurant rating sync to biteflow_restaurant
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection && mongoose.connection.readyState === 1 && order.restaurantId) {
+        const restDb = mongoose.connection.useDb('biteflow_restaurant');
+        let restQuery = { id: order.restaurantId };
+        if (mongoose.Types.ObjectId.isValid(order.restaurantId)) {
+          restQuery = {
+            $or: [{ _id: new mongoose.Types.ObjectId(order.restaurantId) }, { id: order.restaurantId }],
+          };
+        }
+        const rest = await restDb.collection('restaurants').findOne(restQuery);
+        if (rest) {
+          const currentTotal = rest.totalRatings || 0;
+          const currentRating = rest.rating || 5.0;
+          const newTotal = currentTotal + 1;
+          const newAvg = currentTotal === 0
+            ? foodRating
+            : Number((((currentRating * currentTotal) + foodRating) / newTotal).toFixed(1));
+
+          await restDb.collection('restaurants').updateOne(
+            { _id: rest._id },
+            {
+              $set: { rating: newAvg, totalRatings: newTotal },
+              $push: {
+                ratingsList: {
+                  userId: user.userId,
+                  userName: user.name || 'Verified Customer',
+                  rating: foodRating,
+                  comment: (reviewData.foodComment || '').trim(),
+                  orderId: order._id ? order._id.toString() : order.id,
+                  createdAt: new Date(),
+                },
+              },
+            }
+          );
+        }
+      }
+    } catch (ratingErr) {
+      console.warn('Real-time restaurant rating sync notice:', ratingErr.message);
+    }
+
     return updated;
   }
 }

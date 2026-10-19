@@ -54,8 +54,23 @@ const restaurantSchema = new mongoose.Schema(
     },
     rating: {
       type: Number,
-      default: 4.8,
+      default: 5.0,
+      min: 1,
+      max: 5,
     },
+    totalRatings: {
+      type: Number,
+      default: 0,
+    },
+    ratingsList: [
+      {
+        userId: { type: String, default: 'anonymous' },
+        userName: { type: String, default: 'Customer' },
+        rating: { type: Number, min: 1, max: 5 },
+        comment: { type: String, default: '' },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     deliveryTimeEstimate: {
       type: String,
       default: '25-35 min',

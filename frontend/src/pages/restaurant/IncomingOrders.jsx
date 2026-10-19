@@ -17,6 +17,7 @@ import {
   XCircle,
   Truck,
   AlertCircle,
+  MessageSquare,
 } from 'lucide-react';
 
 export const IncomingOrders = () => {
@@ -145,11 +146,21 @@ export const IncomingOrders = () => {
                         ))}
                       </div>
 
-                      {order.orderNotes && (
-                        <div className="p-2.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-100 text-xs mt-2">
-                          <strong>Note:</strong> {order.orderNotes}
+                      {order.orderNotes ? (
+                        <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs mt-3 flex items-start gap-2.5 shadow-xs">
+                          <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 shrink-0 mt-0.5">
+                            <MessageSquare className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-400 block mb-0.5">
+                              Customer's Special Instructions / Note:
+                            </span>
+                            <p className="font-bold text-slate-800 dark:text-slate-100 text-xs leading-snug">
+                              {order.orderNotes}
+                            </p>
+                          </div>
                         </div>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* Delivery Destination */}

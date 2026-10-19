@@ -65,7 +65,7 @@ export const RestaurantEditModal = ({
     status: 'OPEN',
     deliveryTimeEstimate: '20-30 min',
     imageUrl: '',
-    rating: 4.8,
+    rating: 5.0,
   });
 
   const [saving, setSaving] = useState(false);
@@ -85,7 +85,7 @@ export const RestaurantEditModal = ({
         status: restaurant.status || 'OPEN',
         deliveryTimeEstimate: restaurant.deliveryTimeEstimate || '25-35 min',
         imageUrl: restaurant.imageUrl || '',
-        rating: restaurant.rating || 4.8,
+        rating: restaurant.rating !== undefined && restaurant.rating !== null ? restaurant.rating : 5.0,
       });
     } else {
       setFormData({
@@ -100,7 +100,7 @@ export const RestaurantEditModal = ({
         status: 'OPEN',
         deliveryTimeEstimate: '20-30 min',
         imageUrl: SAMPLE_RESTAURANT_IMAGES[0].url,
-        rating: 4.8,
+        rating: 5.0,
       });
     }
     setError('');
