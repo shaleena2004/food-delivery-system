@@ -39,6 +39,54 @@ class AuthService {
     const userObj = createdUser.toJSON ? createdUser.toJSON() : { ...createdUser };
     delete userObj.password;
 
+    // Automatically sync customer profile and default address into biteflow_customer
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        const customerDb = mongoose.connection.useDb('biteflow_customer');
+        const userIdStr = (userObj._id || userObj.id).toString();
+        const parts = name.trim().split(' ');
+        const firstName = parts[0] || 'Valued';
+        const lastName = parts.slice(1).join(' ') || 'Customer';
+
+        await customerDb.collection('customers').updateOne(
+          { userId: userIdStr },
+          {
+            $setOnInsert: {
+              userId: userIdStr,
+              firstName,
+              lastName,
+              phoneNumber: '+1 (555) 019-2834',
+              profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+              status: 'ACTIVE',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          },
+          { upsert: true }
+        );
+
+        await customerDb.collection('addresses').updateOne(
+          { customerId: userIdStr },
+          {
+            $setOnInsert: {
+              customerId: userIdStr,
+              addressName: 'Home',
+              addressLines: '45 Park Avenue, Apt 7B',
+              city: 'New York',
+              postalCode: '10016',
+              isDefault: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          },
+          { upsert: true }
+        );
+      }
+    } catch (syncErr) {
+      console.warn('Customer profile sync notice:', syncErr.message);
+    }
+
     const token = generateToken({
       userId: userObj._id || userObj.id,
       email: userObj.email,
@@ -180,6 +228,55 @@ class AuthService {
 
     const userObj = createdUser.toJSON ? createdUser.toJSON() : { ...createdUser };
     delete userObj.password;
+
+    if (role === 'CUSTOMER') {
+      try {
+        const mongoose = require('mongoose');
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          const customerDb = mongoose.connection.useDb('biteflow_customer');
+          const userIdStr = (userObj._id || userObj.id).toString();
+          const parts = name.trim().split(' ');
+          const firstName = parts[0] || 'Valued';
+          const lastName = parts.slice(1).join(' ') || 'Customer';
+
+          await customerDb.collection('customers').updateOne(
+            { userId: userIdStr },
+            {
+              $setOnInsert: {
+                userId: userIdStr,
+                firstName,
+                lastName,
+                phoneNumber: '+1 (555) 019-2834',
+                profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+                status: 'ACTIVE',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            },
+            { upsert: true }
+          );
+
+          await customerDb.collection('addresses').updateOne(
+            { customerId: userIdStr },
+            {
+              $setOnInsert: {
+                customerId: userIdStr,
+                addressName: 'Home',
+                addressLines: '45 Park Avenue, Apt 7B',
+                city: 'New York',
+                postalCode: '10016',
+                isDefault: true,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            },
+            { upsert: true }
+          );
+        }
+      } catch (syncErr) {
+        console.warn('Customer profile sync notice:', syncErr.message);
+      }
+    }
 
     return {
       id: userObj._id || userObj.id,

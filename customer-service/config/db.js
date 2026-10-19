@@ -9,18 +9,27 @@ const connectDB = async () => {
 
   try {
     const conn = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 15000,
     });
     isConnected = true;
     console.log(`[customer-service] MongoDB Connected to database '${conn.connection.name}' on ${conn.connection.host}`);
     return true;
   } catch (error) {
-    console.warn(`[customer-service] MongoDB connection failed (${error.message}). Falling back to local file-based repository.`);
+    console.warn(`[customer-service] MongoDB initial connection warning (${error.message}). Retrying in background...`);
     isConnected = false;
+    setTimeout(connectDB, 3000);
     return false;
   }
 };
 
-const getIsConnected = () => isConnected;
+mongoose.connection.on('connected', () => {
+  isConnected = true;
+});
+
+mongoose.connection.on('disconnected', () => {
+  isConnected = false;
+});
+
+const getIsConnected = () => isConnected || (mongoose.connection && mongoose.connection.readyState === 1);
 
 module.exports = { connectDB, getIsConnected };

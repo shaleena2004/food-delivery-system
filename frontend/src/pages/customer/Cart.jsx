@@ -179,6 +179,21 @@ export const Cart = () => {
       const newOrder = res.data;
       const orderId = newOrder._id || newOrder.id;
 
+      // Persist new delivery address to biteflow_customer database
+      if (useNewAddress || addresses.length === 0) {
+        try {
+          await customerService.addAddress({
+            addressName: customAddress.addressName || 'Home',
+            addressLines: customAddress.addressLines,
+            city: customAddress.city,
+            postalCode: customAddress.postalCode,
+            isDefault: addresses.length === 0,
+          });
+        } catch (e) {
+          // Non-blocking
+        }
+      }
+
       // Clear cart upon successful order creation
       clearCart();
 
