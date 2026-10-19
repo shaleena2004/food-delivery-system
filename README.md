@@ -33,17 +33,17 @@ food-delivery-system/
 | **Frontend (React)** | `3000` | BiteFlow Single Page Application built with Vite, Tailwind CSS v4, Context API, and role-based routing |
 
 
-## 2. Demo User Accounts
+## 2. Administrator & User Accounts
 
-The database seeds with the following pre-configured demo accounts:
+The database comes pre-configured with the default **System Administrator** account:
 
-| Role | Email | Password | Allowed Landing Area |
+| Role | Email | Password | Landing Area & Permissions |
 |---|---|---|---|
-| **Customer** | `customer@biteflow.com` | `Customer123!` | `/restaurants` (Browse, Cart, Orders, Profile) |
-| **Restaurant Owner (Italian)** | `owner@biteflow.com` | `Owner123!` | `/my-restaurant`, `/menu`, `/incoming-orders` (Bella Napoli) |
-| **Restaurant Owner (Ceylon)** | `ceylon@gmail.com` | `Owner135!` | `/my-restaurant`, `/menu`, `/incoming-orders` (Ceylon Spice Kitchen) |
-| **Delivery Rider** | `delivery@biteflow.com` | `Delivery123!` | `/my-deliveries` (Available Orders, Active Tasks) |
-| **System Admin** | `admin@biteflow.com` | `Admin123!` | Full Access & `/admin/users` Management |
+| **System Admin** | `admin@biteflow.com` | `Admin123!` | Full Access, Restaurant Management, & `/admin/users` Staff Provisioning |
+
+> **User Provisioning Workflow**:
+> - **Restaurant Owners & Delivery Riders**: Are provisioned exclusively by the System Administrator in the User Accounts dashboard (`/admin/users`).
+> - **Customers**: Register directly through the public signup screen (`/register`).
 
 
 ## 3. End-to-End Business Flow

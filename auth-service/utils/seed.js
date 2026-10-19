@@ -19,27 +19,6 @@ const seedUsers = async () => {
         role: 'ADMIN',
         status: 'ACTIVE',
       },
-      {
-        name: 'Sarah Customer',
-        email: 'customer@biteflow.com',
-        password: await hashPassword('Customer123!'),
-        role: 'CUSTOMER',
-        status: 'ACTIVE',
-      },
-      {
-        name: 'Marco Rossi',
-        email: 'owner@biteflow.com',
-        password: await hashPassword('Owner123!'),
-        role: 'RESTAURANT_ADMIN',
-        status: 'ACTIVE',
-      },
-      {
-        name: 'David Rider',
-        email: 'delivery@biteflow.com',
-        password: await hashPassword('Delivery123!'),
-        role: 'DELIVERY_PERSON',
-        status: 'ACTIVE',
-      },
     ];
 
     for (const u of defaultUsers) {

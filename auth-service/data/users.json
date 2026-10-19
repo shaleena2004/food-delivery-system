@@ -9,38 +9,5 @@
     "status": "ACTIVE",
     "createdAt": "2026-10-19T07:30:55.328Z",
     "updatedAt": "2026-10-19T07:30:55.333Z"
-  },
-  {
-    "_id": "559b0a3152f6dbe729c01806",
-    "id": "559b0a3152f6dbe729c01806",
-    "name": "Sarah Customer",
-    "email": "customer@biteflow.com",
-    "password": "$2a$10$nlIYQj0aiZFcx.trRiskUOdgE8RfjfxEBdkyTNW2VRwOeTEGppIbe",
-    "role": "CUSTOMER",
-    "status": "ACTIVE",
-    "createdAt": "2026-10-19T07:30:55.334Z",
-    "updatedAt": "2026-10-19T07:30:55.334Z"
-  },
-  {
-    "_id": "22a3022986fdd35de140fbb8",
-    "id": "22a3022986fdd35de140fbb8",
-    "name": "Marco Rossi",
-    "email": "owner@biteflow.com",
-    "password": "$2a$10$A74R5XRYo5tZqeocrCqgJ.zVffE88hsf7uc2QolSuW4/EtznGaLpK",
-    "role": "RESTAURANT_ADMIN",
-    "status": "ACTIVE",
-    "createdAt": "2026-10-19T07:30:55.334Z",
-    "updatedAt": "2026-10-19T07:30:55.334Z"
-  },
-  {
-    "_id": "86e0beb66f6faecf3e96ba7a",
-    "id": "86e0beb66f6faecf3e96ba7a",
-    "name": "David Rider",
-    "email": "delivery@biteflow.com",
-    "password": "$2a$10$Cn/AEZB6730XvA/bQZGLkOLBAtC.Bw1glDW6etsGxL1eq8BkWEdU.",
-    "role": "DELIVERY_PERSON",
-    "status": "ACTIVE",
-    "createdAt": "2026-10-19T07:30:55.334Z",
-    "updatedAt": "2026-10-19T07:30:55.334Z"
   }
 ]
