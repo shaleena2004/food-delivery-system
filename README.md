@@ -40,7 +40,8 @@ The database seeds with the following pre-configured demo accounts:
 | Role | Email | Password | Allowed Landing Area |
 |---|---|---|---|
 | **Customer** | `customer@biteflow.com` | `Customer123!` | `/restaurants` (Browse, Cart, Orders, Profile) |
-| **Restaurant Owner** | `owner@biteflow.com` | `Owner123!` | `/my-restaurant`, `/menu`, `/incoming-orders` |
+| **Restaurant Owner (Italian)** | `owner@biteflow.com` | `Owner123!` | `/my-restaurant`, `/menu`, `/incoming-orders` (Bella Napoli) |
+| **Restaurant Owner (Ceylon)** | `ceylon@gmail.com` | `Owner135!` | `/my-restaurant`, `/menu`, `/incoming-orders` (Ceylon Spice Kitchen) |
 | **Delivery Rider** | `delivery@biteflow.com` | `Delivery123!` | `/my-deliveries` (Available Orders, Active Tasks) |
 | **System Admin** | `admin@biteflow.com` | `Admin123!` | Full Access & `/admin/users` Management |
 
