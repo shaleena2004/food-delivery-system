@@ -34,7 +34,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
     // Restaurant Admin links
     ...(role === 'RESTAURANT_ADMIN'
       ? [
-          { to: '/restaurants', label: 'All Restaurants Catalog', icon: Compass },
           { to: '/my-restaurant', label: 'My Restaurant', icon: Store },
           { to: '/menu', label: 'Menu Management', icon: UtensilsCrossed },
           { to: '/incoming-orders', label: 'Incoming Orders', icon: ChefHat },

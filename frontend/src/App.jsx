@@ -1,10 +1,22 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { AppShell } from './components/layout/AppShell';
 import { ProtectedRoute } from './routes/ProtectedRoute';
+
+// Home route redirect based on user role
+const HomeRedirect = () => {
+  const { user } = useAuth();
+  if (user?.role === 'RESTAURANT_ADMIN') {
+    return <Navigate to="/my-restaurant" replace />;
+  }
+  if (user?.role === 'DELIVERY_PERSON') {
+    return <Navigate to="/my-deliveries" replace />;
+  }
+  return <Navigate to="/restaurants" replace />;
+};
 
 // Pages
 import { Login } from './pages/auth/Login';
@@ -31,7 +43,7 @@ export const App = () => {
           <Routes>
             <Route path="/" element={<AppShell />}>
               {/* Home redirect */}
-              <Route index element={<Navigate to="/restaurants" replace />} />
+              <Route index element={<HomeRedirect />} />
 
               {/* Public & Customer Routes */}
               <Route path="login" element={<Login />} />

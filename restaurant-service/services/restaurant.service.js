@@ -77,33 +77,50 @@ class RestaurantService {
   async updateRestaurant(id, data, user) {
     const restaurant = await this.getRestaurantById(id);
 
-    // Permission check: only owner or ADMIN
-    if (restaurant.ownerId !== user.userId && user.role !== 'ADMIN') {
+    const isOwner =
+      restaurant.ownerId === user.userId ||
+      (user.email && restaurant.email && restaurant.email.toLowerCase() === user.email.toLowerCase());
+
+    if (!isOwner && user.role !== 'ADMIN') {
       const error = new Error('Access denied: you are not the owner of this restaurant');
       error.statusCode = 403;
       throw error;
     }
 
-    return await restaurantRepository.updateById(id, data);
+    return await restaurantRepository.updateById(id, {
+      ...data,
+      ownerId: user.userId,
+    });
   }
 
   async toggleStatus(id, user) {
     const restaurant = await this.getRestaurantById(id);
 
-    if (restaurant.ownerId !== user.userId && user.role !== 'ADMIN') {
+    const isOwner =
+      restaurant.ownerId === user.userId ||
+      (user.email && restaurant.email && restaurant.email.toLowerCase() === user.email.toLowerCase());
+
+    if (!isOwner && user.role !== 'ADMIN') {
       const error = new Error('Access denied: you are not the owner of this restaurant');
       error.statusCode = 403;
       throw error;
     }
 
     const newStatus = restaurant.status === 'OPEN' ? 'CLOSED' : 'OPEN';
-    return await restaurantRepository.updateById(id, { status: newStatus });
+    return await restaurantRepository.updateById(id, {
+      status: newStatus,
+      ownerId: user.userId,
+    });
   }
 
   async deleteRestaurant(id, user) {
     const restaurant = await this.getRestaurantById(id);
 
-    if (restaurant.ownerId !== user.userId && user.role !== 'ADMIN') {
+    const isOwner =
+      restaurant.ownerId === user.userId ||
+      (user.email && restaurant.email && restaurant.email.toLowerCase() === user.email.toLowerCase());
+
+    if (!isOwner && user.role !== 'ADMIN') {
       const error = new Error('Access denied: you are not the owner of this restaurant');
       error.statusCode = 403;
       throw error;

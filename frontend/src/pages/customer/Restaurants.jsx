@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { restaurantService } from '../../services/restaurant.service';
 import { useFetch } from '../../hooks/useFetch';
 import { useAuth } from '../../context/AuthContext';
@@ -29,6 +29,12 @@ const CUISINES = ['All', 'Italian', 'Burgers & Fast Food', 'Asian & Sushi', 'Des
 export const Restaurants = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Restaurant Owners manage their own storefront and should not see the customer all-restaurants catalog
+  if (user && user.role === 'RESTAURANT_ADMIN') {
+    return <Navigate to="/my-restaurant" replace />;
+  }
+
   const isAdmin = user && user.role === 'ADMIN';
   const isRestaurantOwner = user && user.role === 'RESTAURANT_ADMIN';
   const canAddRestaurant = isAdmin || isRestaurantOwner;
