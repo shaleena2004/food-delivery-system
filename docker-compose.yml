@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: biteflow-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - biteflow-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGO_URI=${MONGO_URI_AUTH:-mongodb://mongo:27017/biteflow_auth}
+      - JWT_SECRET=${JWT_SECRET:-biteflow_super_secret_jwt_key_2026}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - biteflow-network
+
+  restaurant-service:
+    build:
+      context: ./restaurant-service
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - MONGO_URI=${MONGO_URI_RESTAURANT:-mongodb://mongo:27017/biteflow_restaurant}
+      - JWT_SECRET=${JWT_SECRET:-biteflow_super_secret_jwt_key_2026}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - biteflow-network
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MONGO_URI=${MONGO_URI_ORDER:-mongodb://mongo:27017/biteflow_order}
+      - JWT_SECRET=${JWT_SECRET:-biteflow_super_secret_jwt_key_2026}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:5002
+      - DELIVERY_SERVICE_URL=http://delivery-service:5004
+    depends_on:
+      mongo:
+        condition: service_healthy
+      restaurant-service:
+        condition: service_started
+      delivery-service:
+        condition: service_started
+    networks:
+      - biteflow-network
+
+  delivery-service:
+    build:
+      context: ./delivery-service
+      dockerfile: Dockerfile
+    container_name: delivery-service
+    restart: unless-stopped
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - MONGO_URI=${MONGO_URI_DELIVERY:-mongodb://mongo:27017/biteflow_delivery}
+      - JWT_SECRET=${JWT_SECRET:-biteflow_super_secret_jwt_key_2026}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - ORDER_SERVICE_URL=http://order-service:5003
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - biteflow-network
+
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    container_name: customer-service
+    restart: unless-stopped
+    ports:
+      - "5005:5005"
+    environment:
+      - PORT=5005
+      - MONGO_URI=${MONGO_URI_CUSTOMER:-mongodb://mongo:27017/biteflow_customer}
+      - JWT_SECRET=${JWT_SECRET:-biteflow_super_secret_jwt_key_2026}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - biteflow-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_AUTH_API=http://localhost:5001/api/auth
+        - VITE_RESTAURANT_API=http://localhost:5002/api
+        - VITE_ORDER_API=http://localhost:5003/api/orders
+        - VITE_DELIVERY_API=http://localhost:5004/api/deliveries
+        - VITE_CUSTOMER_API=http://localhost:5005/api/customers
+    container_name: food-delivery-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - auth-service
+      - restaurant-service
+      - order-service
+      - delivery-service
+      - customer-service
+    networks:
+      - biteflow-network
+
+networks:
+  biteflow-network:
+    driver: bridge
+
+volumes:
+  mongo-data:

@@ -1,0 +1,102 @@
+[
+  {
+    "_id": "e9e5d7a8f36e523b7811c847",
+    "id": "e9e5d7a8f36e523b7811c847",
+    "customerId": "559b0a3152f6dbe729c01806",
+    "customerName": "Sarah Customer",
+    "restaurantId": "a733e7e1426d9fa97f276557",
+    "restaurantName": "Bella Napoli Trattoria",
+    "items": [
+      {
+        "menuItemId": "ede2244223a836c7b2a57aa9",
+        "itemName": "Neapolitan Margherita Pizza",
+        "quantity": 2,
+        "unitPrice": 14.99,
+        "totalPrice": 29.98,
+        "imageUrl": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&auto=format&fit=crop&q=80"
+      },
+      {
+        "menuItemId": "91e48529313d754468f890ac",
+        "itemName": "Truffle Tagliatelle Pasta",
+        "quantity": 1,
+        "unitPrice": 18.5,
+        "totalPrice": 18.5,
+        "imageUrl": "https://images.unsplash.com/photo-1621996346565-e3d5d6281699?w=600&auto=format&fit=crop&q=80"
+      }
+    ],
+    "deliveryAddress": {
+      "addressName": "Home",
+      "addressLines": "123 Test Street, Suite 5",
+      "city": "Metropolis",
+      "postalCode": "10001"
+    },
+    "subtotal": 48.48,
+    "deliveryFee": 3.99,
+    "totalAmount": 52.47,
+    "status": "ON_THE_WAY",
+    "orderNotes": "Test order from integration test",
+    "statusHistory": [
+      {
+        "status": "PENDING",
+        "timestamp": "2026-10-19T09:16:30.282Z",
+        "note": "Order placed by customer"
+      }
+    ],
+    "createdAt": "2026-10-19T09:16:30.282Z",
+    "updatedAt": "2026-10-19T09:16:31.135Z",
+    "$push": {
+      "statusHistory": {
+        "status": "ON_THE_WAY",
+        "timestamp": "2026-10-19T09:16:31.135Z",
+        "note": "Delivery updated to ON_THE_WAY"
+      }
+    },
+    "deliveryId": "03e8555cb93117e2bf2b8c66"
+  },
+  {
+    "_id": "ecc3918cc01c9937ca09beba",
+    "id": "ecc3918cc01c9937ca09beba",
+    "customerId": "559b0a3152f6dbe729c01806",
+    "customerName": "Sarah Customer",
+    "restaurantId": "a733e7e1426d9fa97f276557",
+    "restaurantName": "Bella Napoli Trattoria",
+    "items": [
+      {
+        "menuItemId": "ede2244223a836c7b2a57aa9",
+        "itemName": "Neapolitan Margherita Pizza",
+        "quantity": 1,
+        "unitPrice": 14.99,
+        "totalPrice": 14.99,
+        "imageUrl": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&auto=format&fit=crop&q=80"
+      }
+    ],
+    "deliveryAddress": {
+      "addressName": "Home",
+      "addressLines": "45 Ocean Drive",
+      "city": "Metropolis",
+      "postalCode": "90210"
+    },
+    "subtotal": 14.99,
+    "deliveryFee": 3.99,
+    "totalAmount": 18.98,
+    "status": "DELIVERED",
+    "orderNotes": "",
+    "statusHistory": [
+      {
+        "status": "PENDING",
+        "timestamp": "2026-10-19T09:18:26.187Z",
+        "note": "Order placed by customer"
+      }
+    ],
+    "createdAt": "2026-10-19T09:18:26.187Z",
+    "updatedAt": "2026-10-19T09:18:27.022Z",
+    "$push": {
+      "statusHistory": {
+        "status": "DELIVERED",
+        "timestamp": "2026-10-19T09:18:27.022Z",
+        "note": "Delivery updated to DELIVERED"
+      }
+    },
+    "deliveryId": "2294b375dcc5680800abb119"
+  }
+]
